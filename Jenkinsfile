@@ -15,9 +15,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == 'origin/dev') {
+                    // Log the branch name to debug branch detection
+                    echo "Branch Name: ${env.GIT_BRANCH}"
+
+                    if (env.GIT_BRANCH == 'origin/dev' || env.GIT_BRANCH == 'refs/heads/dev') {
                         dockerImage = docker.build(devRegistry)
-                    } else if (env.GIT_BRANCH == 'origin/master') {
+                    } else if (env.GIT_BRANCH == 'origin/master' || env.GIT_BRANCH == 'refs/heads/master') {
                         dockerImage = docker.build(prodRegistry)
                     } else {
                         error("Unknown branch: ${env.GIT_BRANCH}")
@@ -28,11 +31,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == 'origin/dev') {
+                    if (env.GIT_BRANCH == 'origin/dev' || env.GIT_BRANCH == 'refs/heads/dev') {
                         docker.withRegistry('', registryCredential) {
                             dockerImage.push('latest')
                         }
-                    } else if (env.GIT_BRANCH == 'origin/master') {
+                    } else if (env.GIT_BRANCH == 'origin/master' || env.GIT_BRANCH == 'refs/heads/master') {
                         docker.withRegistry('', registryCredential) {
                             dockerImage.push('latest')
                         }
